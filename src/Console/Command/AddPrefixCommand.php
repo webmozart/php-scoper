@@ -85,8 +85,7 @@ final class AddPrefixCommand extends BaseCommand
                 self::OUTPUT_DIR_OPT,
                 'o',
                 InputOption::VALUE_REQUIRED,
-                'The output directory in which the prefixed code will be dumped.',
-                'build'
+                'The output directory in which the prefixed code will be dumped.'
             )
             ->addOption(
                 self::FORCE_OPT,
@@ -128,11 +127,12 @@ final class AddPrefixCommand extends BaseCommand
 
         $this->changeWorkingDirectory($input);
 
+        $config = $this->retrieveConfig($input, $output, $io);
+
         $this->validatePrefix($input);
         $this->validatePaths($input);
-        $this->validateOutputDir($input, $io);
+        $this->validateOutputDir($input, $io, $config);
 
-        $config = $this->retrieveConfig($input, $output, $io);
         $output = $input->getOption(self::OUTPUT_DIR_OPT);
 
         if ([] !== $config->getWhitelistedFiles()) {
@@ -301,9 +301,9 @@ final class AddPrefixCommand extends BaseCommand
         $input->setArgument(self::PATH_ARG, $paths);
     }
 
-    private function validateOutputDir(InputInterface $input, OutputStyle $io): void
+    private function validateOutputDir(InputInterface $input, OutputStyle $io, Configuration $config)
     {
-        $outputDir = $input->getOption(self::OUTPUT_DIR_OPT);
+        $outputDir = $input->getOption(self::OUTPUT_DIR_OPT) ?? $config->getOutputDir() ?? 'build';
 
         if (false === $this->fileSystem->isAbsolutePath($outputDir)) {
             $outputDir = getcwd().DIRECTORY_SEPARATOR.$outputDir;

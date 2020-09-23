@@ -46,6 +46,7 @@ final class Configuration
     private const WHITELIST_GLOBAL_CONSTANTS_KEYWORD = 'whitelist-global-constants';
     private const WHITELIST_GLOBAL_CLASSES_KEYWORD = 'whitelist-global-classes';
     private const WHITELIST_GLOBAL_FUNCTIONS_KEYWORD = 'whitelist-global-functions';
+    private const OUTPUT_DIR_KEYWORD = 'output-dir';
 
     private const KEYWORDS = [
         self::PREFIX_KEYWORD,
@@ -56,6 +57,7 @@ final class Configuration
         self::WHITELIST_GLOBAL_CONSTANTS_KEYWORD,
         self::WHITELIST_GLOBAL_CLASSES_KEYWORD,
         self::WHITELIST_GLOBAL_FUNCTIONS_KEYWORD,
+        self::OUTPUT_DIR_KEYWORD
     ];
 
     private $path;
@@ -64,6 +66,7 @@ final class Configuration
     private $patchers;
     private $whitelist;
     private $whitelistedFiles;
+    private $outputDir;
 
     /**
      * @param string|null $path  Absolute path to the configuration file.
@@ -134,7 +137,13 @@ final class Configuration
         $filesFromPaths = self::retrieveFilesFromPaths($paths);
         $filesWithContents = self::retrieveFilesWithContents(chain($filesFromPaths, ...$finders));
 
-        return new self($path, $prefix, $filesWithContents, $patchers, $whitelist, $whitelistedFiles);
+        if (false === array_key_exists(self::OUTPUT_DIR_KEYWORD, $config)) {
+            $outputDir = null;
+        } else {
+            $outputDir = $config[ self::OUTPUT_DIR_KEYWORD ];
+        }
+
+        return new self($path, $prefix, $filesWithContents, $patchers, $whitelist, $whitelistedFiles, $outputDir);
     }
 
     /**
@@ -154,7 +163,8 @@ final class Configuration
         array $filesWithContents,
         array $patchers,
         Whitelist $whitelist,
-        array $whitelistedFiles
+        array $whitelistedFiles,
+        ?string $outputDir
     ) {
         $this->path = $path;
         $this->prefix = $prefix;
@@ -162,6 +172,7 @@ final class Configuration
         $this->patchers = $patchers;
         $this->whitelist = $whitelist;
         $this->whitelistedFiles = $whitelistedFiles;
+        $this->outputDir = $outputDir;
     }
 
     public function withPaths(array $paths): self
@@ -180,7 +191,8 @@ final class Configuration
             array_merge($this->filesWithContents, $filesWithContents),
             $this->patchers,
             $this->whitelist,
-            $this->whitelistedFiles
+            $this->whitelistedFiles,
+            $this->outputDir
         );
     }
 
@@ -194,7 +206,8 @@ final class Configuration
             $this->filesWithContents,
             $this->patchers,
             $this->whitelist,
-            $this->whitelistedFiles
+            $this->whitelistedFiles,
+            $this->outputDir
         );
     }
 
@@ -232,6 +245,10 @@ final class Configuration
     public function getWhitelistedFiles(): array
     {
         return $this->whitelistedFiles;
+    }
+
+    public function getOutputDir(): ?string {
+    	return $this->outputDir;
     }
 
     private static function validateConfigKeys(array $config): void

@@ -30,6 +30,7 @@ use RuntimeException as RootRuntimeException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\Filesystem\Filesystem;
+use function KevinGH\Box\FileSystem\dump_file;
 
 /**
  * @covers \Humbug\PhpScoper\Console\Command\AddPrefixCommand
@@ -138,23 +139,56 @@ EOF;
         $this->fileSystemProphecy->isAbsolutePath(Argument::cetera())->shouldNotHaveBeenCalled();
     }
 
-    public function test_scope_the_given_paths(): void
+    public function provideOutputDirOptions()
     {
+        return [
+            [true, false, 'output_dir_from_config'],
+            [false, true, 'output_dir_from_command_line'],
+            [true, true, 'output_dir_from_command_line'],
+        ];
+    }
+
+    /**
+     * @dataProvider provideOutputDirOptions
+     */
+    public function test_scope_the_given_paths($useOutputDirInConfigFile, $useOutputDirInCommandLine, $expoectedOutputDir): void
+    {
+        if($useOutputDirInConfigFile) {
+            $foo = $this->tmp . '/output_dir_from_config';
+            dump_file( $this->tmp . '/scoper.inc.php', "
+<?php
+
+return [
+    'output-dir' => '$foo' 
+];"
+            );
+        }
+
         $input = [
             'add-prefix',
             '--prefix' => 'MyPrefix',
             'paths' => [
                 $root = self::FIXTURE_PATH.'/set002/original',
             ],
-            '--output-dir' => $this->tmp,
+            '--output-dir' => $this->tmp . '/' . $expoectedOutputDir,
             '--no-interaction',
             '--no-config' => null,
         ];
 
+        if($useOutputDirInConfigFile) {
+            $input['--config'] = $this->tmp . '/scoper.inc.php';
+        } else {
+            $input['--no-config'] = null;
+        }
+
+        if($useOutputDirInCommandLine) {
+            $input['--output-dir'] = $this->tmp . '/' . $expoectedOutputDir;
+        }
+
         $this->fileSystemProphecy->isAbsolutePath($root)->willReturn(true);
         $this->fileSystemProphecy->isAbsolutePath($this->tmp)->willReturn(true);
 
-        $this->fileSystemProphecy->mkdir($this->tmp)->shouldBeCalled();
+        $this->fileSystemProphecy->mkdir($this->tmp . '/' . $expoectedOutputDir)->shouldBeCalled();
         $this->fileSystemProphecy->exists(Argument::cetera())->willReturn(false);
         $this->fileSystemProphecy->remove(Argument::cetera())->shouldNotBeCalled();
 
@@ -169,7 +203,7 @@ EOF;
 
         foreach ($expectedFiles as $expectedFile => $prefixedContents) {
             $inputPath = escape_path($root.'/'.$expectedFile);
-            $outputPath = escape_path($this->tmp.'/'.$expectedFile);
+            $outputPath = escape_path($this->tmp . '/' . $expoectedOutputDir . '/' . $expectedFile);
 
             $inputContents = file_get_contents($inputPath);
 

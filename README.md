@@ -35,6 +35,7 @@ potentially very difficult to debug due to dissimilar or unsupported package ver
     - [Composer](#composer)
 - [Usage](#usage)
 - [Configuration](#configuration)
+    - [Output directory](#output-directory)
     - [Prefix](#prefix)
     - [Finders and paths](#finders-and-paths)
     - [Patchers](#patchers)
@@ -152,6 +153,7 @@ with a `--config` option.
 use Isolated\Symfony\Component\Finder\Finder;
 
 return [
+    'output-dir' => null,                   // string|null
     'prefix' => null,                       // string|null
     'finders' => [],                        // Finder[]
     'patchers' => [],                       // callable[]
@@ -162,6 +164,11 @@ return [
     'whitelist-global-functions' => true,   // bool
 ];
 ```
+
+### Output directory
+
+The base output directory where the prefixed files will be generated. If `null` is given, "build" is used.
+This setting will be overriden by the command line option of the same name if present. 
 
 
 ### Prefix

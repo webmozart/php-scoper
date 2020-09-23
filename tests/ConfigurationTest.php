@@ -36,6 +36,7 @@ class ConfigurationTest extends FileSystemTestCase
         $this->assertNull($configuration->getPrefix());
         $this->assertSame([], $configuration->getFilesWithContents());
         $this->assertEquals([new SymfonyPatcher()], $configuration->getPatchers());
+        $this->assertNull($configuration->getOutputDir());
     }
 
     public function test_it_cannot_create_a_configuration_with_an_invalid_key(): void
@@ -77,6 +78,7 @@ return [
     'whitelist-global-classes' => false,
     'whitelist-global-functions' => false,
     'whitelist' => ['Foo', 'Bar\*'],
+    'output-dir' => 'foo/bar'
 ];
 PHP
         );
@@ -93,5 +95,6 @@ PHP
         $this->assertSame('MyPrefix', $configuration->getPrefix());
         $this->assertSame([], $configuration->getFilesWithContents());
         $this->assertEquals([new SymfonyPatcher()], $configuration->getPatchers());
+        $this->assertEquals('foo/bar', $configuration->getOutputDir());
     }
 }
