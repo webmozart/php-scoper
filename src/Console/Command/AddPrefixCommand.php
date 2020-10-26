@@ -33,6 +33,8 @@ use Symfony\Component\Console\Style\OutputStyle;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Throwable;
+use function is_dir;
+use function sprintf;
 
 final class AddPrefixCommand extends BaseCommand
 {
@@ -130,9 +132,12 @@ final class AddPrefixCommand extends BaseCommand
 
         $this->validatePrefix($input);
         $this->validatePaths($input);
-        $this->validateOutputDir($input, $io);
 
         $config = $this->retrieveConfig($input, $output, $io);
+        if(!$this->validateOutputDir($input, $io, $config)) {
+            return 1;
+        };
+
         $output = $input->getOption(self::OUTPUT_DIR_OPT);
 
         if ([] !== $config->getWhitelistedFiles()) {
@@ -301,7 +306,10 @@ final class AddPrefixCommand extends BaseCommand
         $input->setArgument(self::PATH_ARG, $paths);
     }
 
-    private function validateOutputDir(InputInterface $input, OutputStyle $io): void
+    /**
+     * @return bool True if the command execution must continue after the function returns, false otherwise
+     */
+    private function validateOutputDir(InputInterface $input, OutputStyle $io, Configuration $config): bool
     {
         $outputDir = $input->getOption(self::OUTPUT_DIR_OPT);
 
@@ -312,7 +320,7 @@ final class AddPrefixCommand extends BaseCommand
         $input->setOption(self::OUTPUT_DIR_OPT, $outputDir);
 
         if (false === $this->fileSystem->exists($outputDir)) {
-            return;
+            return true;
         }
 
         if (false === is_writable($outputDir)) {
@@ -325,9 +333,26 @@ final class AddPrefixCommand extends BaseCommand
         }
 
         if ($input->getOption(self::FORCE_OPT)) {
+            $onExistingOutputDirBehavior = 'overwrite';
+        } else {
+            $onExistingOutputDirBehavior = $config->getOnExistingOutputDir();
+        }
+
+        if ('overwrite' === $onExistingOutputDirBehavior) {
             $this->fileSystem->remove($outputDir);
 
-            return;
+            return true;
+        }
+
+        if ('abort' === $onExistingOutputDirBehavior) {
+            $io->writeln(
+                sprintf(
+                    '%s "<comment>%s</comment>" already exists, aborting.',
+                    is_dir($outputDir) ? 'Directory' : 'File',
+                    $outputDir
+                )
+            );
+            return false;
         }
 
         if (false === is_dir($outputDir)) {
@@ -341,7 +366,7 @@ final class AddPrefixCommand extends BaseCommand
             );
 
             if (false === $canDeleteFile) {
-                return;
+                return false;
             }
 
             $this->fileSystem->remove($outputDir);
@@ -356,10 +381,12 @@ final class AddPrefixCommand extends BaseCommand
             );
 
             if (false === $canDeleteFile) {
-                return;
+                return false;
             }
 
             $this->fileSystem->remove($outputDir);
+
+            return true;
         }
     }
 

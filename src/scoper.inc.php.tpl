@@ -5,6 +5,10 @@ declare(strict_types=1);
 use Isolated\Symfony\Component\Finder\Finder;
 
 return [
+    // Behavior when the output directory already exists. Allowed values are
+    // 'ask' (default), 'overwrite' and 'abort'.
+    'on-existing-output-dir' => 'ask',
+
     // The prefix configuration. If a non null value will be used, a random prefix will be generated.
     'prefix' => null,
 

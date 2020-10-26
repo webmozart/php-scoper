@@ -35,6 +35,7 @@ potentially very difficult to debug due to dissimilar or unsupported package ver
     - [Composer](#composer)
 - [Usage](#usage)
 - [Configuration](#configuration)
+    - [Behavior on existing output directory](#behavior-on-existing-output-directory)
     - [Prefix](#prefix)
     - [Finders and paths](#finders-and-paths)
     - [Patchers](#patchers)
@@ -152,6 +153,7 @@ with a `--config` option.
 use Isolated\Symfony\Component\Finder\Finder;
 
 return [
+    'on-existing-output-dir' => 'ask',      // string
     'prefix' => null,                       // string|null
     'finders' => [],                        // Finder[]
     'patchers' => [],                       // callable[]
@@ -162,6 +164,18 @@ return [
     'whitelist-global-functions' => true,   // bool
 ];
 ```
+
+### Behavior on existing output directory
+
+The `on-existing-output-dir` key controls the behavior of PHP Scoper when the output
+directory (or a file with the same name) already exists. Three values are allowed:
+
+* `ask`: Ask the user for confirmation on overwriting. This is the default behavior. 
+* `overwrite`: Overwrite the existing output directory without being asked to confirm.
+* `abort`: Abort the scoping process without being asked to confirm.
+
+Note that if the `--force` option is specified when running the command then the value
+of this configuration key will be ignored (a value of `overwrite` will be assumed).
 
 
 ### Prefix
@@ -573,7 +587,9 @@ code untouched. The default location is `./build`. You can change the default
 location using the `--output-dir` option. By default, it also generates a random
 prefix string. You can set a specific prefix string using the `--prefix` option.
 If automating builds, you can set the `--force` option to overwrite any code
-existing in the output directory without being asked to confirm.
+existing in the output directory without being asked to confirm (see also the
+ "[Behavior on existing output directory](#behavior-on-existing-output-directory)"
+ configuration key).
 
 Onto the basic command assuming default options from your project's root
 directory:

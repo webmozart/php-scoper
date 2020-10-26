@@ -35,6 +35,8 @@ use SplFileInfo;
 use function sprintf;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use function in_array;
+use function implode;
 
 final class Configuration
 {
@@ -46,6 +48,7 @@ final class Configuration
     private const WHITELIST_GLOBAL_CONSTANTS_KEYWORD = 'whitelist-global-constants';
     private const WHITELIST_GLOBAL_CLASSES_KEYWORD = 'whitelist-global-classes';
     private const WHITELIST_GLOBAL_FUNCTIONS_KEYWORD = 'whitelist-global-functions';
+    private const ON_EXISTING_OUTPUT_DIR_KEYWORD = 'on-existing-output-dir';
 
     private const KEYWORDS = [
         self::PREFIX_KEYWORD,
@@ -56,6 +59,7 @@ final class Configuration
         self::WHITELIST_GLOBAL_CONSTANTS_KEYWORD,
         self::WHITELIST_GLOBAL_CLASSES_KEYWORD,
         self::WHITELIST_GLOBAL_FUNCTIONS_KEYWORD,
+        self::ON_EXISTING_OUTPUT_DIR_KEYWORD
     ];
 
     private $path;
@@ -64,6 +68,7 @@ final class Configuration
     private $patchers;
     private $whitelist;
     private $whitelistedFiles;
+    private $onExistingOutputDir;
 
     /**
      * @param string|null $path  Absolute path to the configuration file.
@@ -133,8 +138,9 @@ final class Configuration
         $finders = self::retrieveFinders($config);
         $filesFromPaths = self::retrieveFilesFromPaths($paths);
         $filesWithContents = self::retrieveFilesWithContents(chain($filesFromPaths, ...$finders));
+        $onExistingOutputDir = self::retrieveOnExistingOutputDir($config);
 
-        return new self($path, $prefix, $filesWithContents, $patchers, $whitelist, $whitelistedFiles);
+        return new self($path, $prefix, $filesWithContents, $patchers, $whitelist, $whitelistedFiles, $onExistingOutputDir);
     }
 
     /**
@@ -154,7 +160,8 @@ final class Configuration
         array $filesWithContents,
         array $patchers,
         Whitelist $whitelist,
-        array $whitelistedFiles
+        array $whitelistedFiles,
+        string $onExistingOutputDir
     ) {
         $this->path = $path;
         $this->prefix = $prefix;
@@ -162,6 +169,7 @@ final class Configuration
         $this->patchers = $patchers;
         $this->whitelist = $whitelist;
         $this->whitelistedFiles = $whitelistedFiles;
+        $this->onExistingOutputDir = $onExistingOutputDir;
     }
 
     public function withPaths(array $paths): self
@@ -180,7 +188,8 @@ final class Configuration
             array_merge($this->filesWithContents, $filesWithContents),
             $this->patchers,
             $this->whitelist,
-            $this->whitelistedFiles
+            $this->whitelistedFiles,
+            $this->onExistingOutputDir
         );
     }
 
@@ -194,7 +203,8 @@ final class Configuration
             $this->filesWithContents,
             $this->patchers,
             $this->whitelist,
-            $this->whitelistedFiles
+            $this->whitelistedFiles,
+            $this->onExistingOutputDir
         );
     }
 
@@ -224,6 +234,11 @@ final class Configuration
     public function getWhitelist(): Whitelist
     {
         return $this->whitelist;
+    }
+
+    public function getOnExistingOutputDir(): string
+    {
+        return $this->onExistingOutputDir;
     }
 
     /**
@@ -547,5 +562,38 @@ final class Configuration
             },
             []
         );
+    }
+
+    private static function retrieveOnExistingOutputDir(array $config): string
+    {
+        if (false === array_key_exists(self::ON_EXISTING_OUTPUT_DIR_KEYWORD, $config)) {
+            return 'ask';
+        }
+
+        $onExistingOutputDir = $config[ self::ON_EXISTING_OUTPUT_DIR_KEYWORD ];
+
+        if(!is_string($onExistingOutputDir)) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Expected %s to be a string, found "%s" instead.',
+                    self::ON_EXISTING_OUTPUT_DIR_KEYWORD,
+                    gettype( $onExistingOutputDir )
+                )
+            );
+        }
+
+        $allowedOnExistingOutputDirValues = ['ask', 'overwrite', 'abort'];
+        if(!in_array($onExistingOutputDir, $allowedOnExistingOutputDirValues, true)) {
+            throw new InvalidArgumentException(
+                sprintf(
+	                'Expected one of "%s" for "%s". Got "%s".',
+	                implode('", "', $allowedOnExistingOutputDirValues),
+	                self::ON_EXISTING_OUTPUT_DIR_KEYWORD,
+	                $onExistingOutputDir
+                )
+            );
+        }
+
+        return $onExistingOutputDir;
     }
 }
