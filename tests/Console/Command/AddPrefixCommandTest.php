@@ -108,8 +108,8 @@ Options:
 
 Available commands:
   add-prefix  Goes through all the PHP files found in the given paths to apply the given prefix to namespaces & FQNs.
-  help        Displays help for a command
-  list        Lists commands
+  help        Display help for a command
+  list        List commands
 
 EOF;
 
