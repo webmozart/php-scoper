@@ -47,6 +47,7 @@ potentially very difficult to debug due to dissimilar or unsupported package ver
                 - [Constants whitelisting](#constants-whitelisting)
                 - [Functions whitelisting](#functions-whitelisting)
         - [Namespaces whitelisting](#namespaces-whitelisting)
+            - [Reversing namespaces whitelisting](#reversing-namespaces-whitelisting)
 - [Building a scoped PHAR](#building-a-scoped-phar)
     - [With Box](#with-box)
     - [Without Box](#without-box)
@@ -151,14 +152,15 @@ with a `--config` option.
 use Isolated\Symfony\Component\Finder\Finder;
 
 return [
-    'prefix' => null,                       // string|null
-    'finders' => [],                        // Finder[]
-    'patchers' => [],                       // callable[]
-    'files-whitelist' => [],                // string[]
-    'whitelist' => [],                      // string[]
-    'whitelist-global-constants' => true,   // bool
-    'whitelist-global-classes' => true,     // bool
-    'whitelist-global-functions' => true,   // bool
+    'prefix' => null,                        // string|null
+    'finders' => [],                         // Finder[]
+    'patchers' => [],                        // callable[]
+    'files-whitelist' => [],                 // string[]
+    'whitelist' => [],                       // string[]
+    'inverse-namespaces-whitelist' => false, // bool
+    'whitelist-global-constants' => true,    // bool
+    'whitelist-global-classes' => true,      // bool
+    'whitelist-global-functions' => true,    // bool
 ];
 ```
 
@@ -540,6 +542,12 @@ return [
 ];
 ```
 
+#### Reversing namespaces whitelisting
+
+If you add an `inverse-namespaces-whitelist` configuration key with a value of `true` 
+then the behavior of the namespaces whitelisting mechanism will be reversed. 
+This means that only classes within a namespace matching the whitelist will be prefixed, 
+and all other classes will be left untouched.
 
 ## Building a Scoped PHAR
 

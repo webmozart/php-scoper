@@ -62,12 +62,19 @@ return [
     // A way to achieve this is by specifying a list of classes to not prefix with the following configuration key. Note
     // that this does not work with functions or constants neither with classes belonging to the global namespace.
     //
+    // To get the inverse behavior (so the whitelist specifies a list of classes to prefix)
+    // you can set `inverse-namespaces-whitelist` to `true`.
+    //
     // Fore more see https://github.com/humbug/php-scoper#whitelist
     'whitelist' => [
         // 'PHPUnit\Framework\TestCase',   // A specific class
         // 'PHPUnit\Framework\*',          // The whole namespace
         // '*',                            // Everything
     ],
+
+    // If `true` then the behavior of `whitelist` will be reversed: only the classes in the specified namespaces
+    // will be prefixed, and all others will be left untouched.
+    'inverse-namespaces-whitelist' => false,
 
     // If `true` then the user defined constants belonging to the global namespace will not be prefixed.
     //

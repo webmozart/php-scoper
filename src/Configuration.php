@@ -59,6 +59,7 @@ final class Configuration
     private const WHITELIST_GLOBAL_CONSTANTS_KEYWORD = 'whitelist-global-constants';
     private const WHITELIST_GLOBAL_CLASSES_KEYWORD = 'whitelist-global-classes';
     private const WHITELIST_GLOBAL_FUNCTIONS_KEYWORD = 'whitelist-global-functions';
+    private const WHITELIST_IS_INVERTED_KEYWORD = 'inverse-namespaces-whitelist';
 
     private const KEYWORDS = [
         self::PREFIX_KEYWORD,
@@ -69,6 +70,7 @@ final class Configuration
         self::WHITELIST_GLOBAL_CONSTANTS_KEYWORD,
         self::WHITELIST_GLOBAL_CLASSES_KEYWORD,
         self::WHITELIST_GLOBAL_FUNCTIONS_KEYWORD,
+        self::WHITELIST_IS_INVERTED_KEYWORD,
     ];
 
     private $path;
@@ -395,7 +397,26 @@ final class Configuration
             }
         }
 
-        return Whitelist::create($whitelistGlobalConstants, $whitelistGlobalClasses, $whitelistGlobalFunctions, ...$whitelist);
+        if (false === array_key_exists(self::WHITELIST_IS_INVERTED_KEYWORD, $config)) {
+            $namespacesWhitelistIsInverted = false;
+        } else {
+            $namespacesWhitelistIsInverted = $config[self::WHITELIST_IS_INVERTED_KEYWORD];
+
+            if (false === is_bool($namespacesWhitelistIsInverted)) {
+                throw new InvalidArgumentException(
+                    sprintf(
+                        'Expected %s to be a boolean, found "%s" instead.',
+                        self::WHITELIST_IS_INVERTED_KEYWORD,
+                        gettype($namespacesWhitelistIsInverted)
+                    )
+                );
+            }
+        }
+
+        $whitelistInstance = Whitelist::create($whitelistGlobalConstants, $whitelistGlobalClasses, $whitelistGlobalFunctions, ...$whitelist);
+        $whitelistInstance->setNamespaceWhitelistIsInverted($namespacesWhitelistIsInverted);
+
+        return $whitelistInstance;
     }
 
     /**

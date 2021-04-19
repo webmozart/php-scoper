@@ -42,6 +42,7 @@ final class Whitelist implements Countable
     private $constants;
     private $namespaces;
     private $patterns;
+    private $namespaceWhitelistIsInverted;
 
     private $whitelistGlobalConstants;
     private $whitelistGlobalClasses;
@@ -140,9 +141,17 @@ final class Whitelist implements Countable
         $this->constants = $constants;
         $this->namespaces = $namespaces;
         $this->patterns = $patterns;
+        $this->namespaceWhitelistIsInverted = false;
     }
 
     public function belongsToWhitelistedNamespace(string $name): bool
+    {
+        return $this->namespaceWhitelistIsInverted ?
+            !$this->belongsToWhitelistedNamespaceCore($name) :
+            $this->belongsToWhitelistedNamespaceCore($name);
+    }
+
+    private function belongsToWhitelistedNamespaceCore(string $name): bool
     {
         $nameNamespace = $this->retrieveNameNamespace($name);
 
@@ -156,6 +165,13 @@ final class Whitelist implements Countable
     }
 
     public function isWhitelistedNamespace(string $name): bool
+    {
+        return $this->namespaceWhitelistIsInverted ?
+            !$this->isWhitelistedNamespaceCore($name) :
+            $this->isWhitelistedNamespaceCore($name);
+    }
+
+    private function isWhitelistedNamespaceCore(string $name): bool
     {
         $name = strtolower($name);
 
@@ -243,6 +259,16 @@ final class Whitelist implements Countable
     public function getRecordedWhitelistedClasses(): array
     {
         return array_values($this->whitelistedClasses);
+    }
+
+    public function isNamespaceWhitelistInverted(): bool
+    {
+        return $this->namespaceWhitelistIsInverted;
+    }
+
+    public function setNamespaceWhitelistIsInverted(bool $value): void
+    {
+        $this->namespaceWhitelistIsInverted = $value;
     }
 
     /**
