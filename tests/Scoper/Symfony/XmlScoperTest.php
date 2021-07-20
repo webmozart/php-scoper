@@ -64,6 +64,8 @@ class XmlScoperTest extends TestCase
             true,
             true,
             true,
+            [],
+            [],
             'Foo',
         );
 
@@ -312,6 +314,8 @@ XML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Acme\Foo\*'
             ),
             <<<'XML'
@@ -470,6 +474,8 @@ XML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Acme\Foo',
             ),
             <<<'XML'
@@ -556,6 +562,8 @@ XML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Acme\*',
             ),
             <<<'XML'

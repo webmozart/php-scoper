@@ -156,6 +156,8 @@ YAML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Symfony\Component\Console\*'
             ),
             <<<'YAML'
@@ -244,6 +246,8 @@ YAML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Acme\Controller\*'
             ),
             <<<'YAML'
@@ -286,6 +290,8 @@ YAML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Acme\Foo\*'
             ),
             <<<'YAML'
@@ -328,6 +334,8 @@ YAML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Acme\Foo\*'
             ),
             <<<'YAML'
@@ -389,6 +397,8 @@ YAML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Acme\Foo\*'
             ),
             <<<'YAML'
@@ -422,6 +432,8 @@ YAML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Acme\Foo',
             ),
             <<<'YAML'
@@ -470,6 +482,8 @@ YAML
                 true,
                 true,
                 true,
+                [],
+                [],
                 'Acme\*',
             ),
             <<<'YAML'

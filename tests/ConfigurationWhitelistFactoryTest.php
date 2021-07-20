@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Humbug\PhpScoper;
 
+use Humbug\PhpScoper\ConfigurationWhitelistFactory;
+use Humbug\PhpScoper\RegexChecker;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 /**
  * @covers \Humbug\PhpScoper\ConfigurationWhitelistFactory
@@ -16,7 +19,9 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->factory = new ConfigurationWhitelistFactory();
+        $this->factory = new ConfigurationWhitelistFactory(
+            new RegexChecker(),
+        );
     }
 
     /**
@@ -40,6 +45,8 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
                 false,
                 false,
                 false,
+                [],
+                [],
             ),
         ];
 
@@ -51,6 +58,8 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
                 true,
                 false,
                 false,
+                [],
+                [],
             ),
         ];
 
@@ -62,6 +71,8 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
                 false,
                 true,
                 false,
+                [],
+                [],
             ),
         ];
 
@@ -73,6 +84,38 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
                 false,
                 false,
                 true,
+                [],
+                [],
+            ),
+        ];
+
+        yield 'exclude exact namespace' => [
+            [
+                ConfigurationKeys::EXCLUDE_NAMESPACES_KEYWORD => [
+                    'PHPUnit\Runner',
+                ],
+            ],
+            Whitelist::create(
+                false,
+                false,
+                false,
+                [],
+                ['PHPUnit\Runner'],
+            ),
+        ];
+
+        yield 'exclude namespace regex' => [
+            [
+                ConfigurationKeys::EXCLUDE_NAMESPACES_KEYWORD => [
+                    '~^PHPUnit\\Runner(\\.*)?$~',
+                ],
+            ],
+            Whitelist::create(
+                false,
+                false,
+                false,
+                ['~^PHPUnit\\Runner(\\.*)?$~i'],
+                [],
             ),
         ];
 
@@ -86,12 +129,17 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
                 false,
                 false,
                 false,
+                [],
+                [],
                 'Acme\Foo',
             ),
         ];
 
         yield 'legacy expose namespace' => [
             [
+                ConfigurationKeys::EXCLUDE_NAMESPACES_KEYWORD => [
+                    'PHPUnit\Internal',
+                ],
                 ConfigurationKeys::WHITELIST_KEYWORD => [
                     'PHPUnit\Runner\*',
                 ],
@@ -100,6 +148,8 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
                 false,
                 false,
                 false,
+                [],
+                ['PHPUnit\Internal'],
                 'PHPUnit\Runner\*',
             ),
         ];
@@ -109,6 +159,10 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
                 ConfigurationKeys::EXPOSE_GLOBAL_CONSTANTS_KEYWORD => true,
                 ConfigurationKeys::EXPOSE_GLOBAL_CLASSES_KEYWORD => true,
                 ConfigurationKeys::EXPOSE_GLOBAL_FUNCTIONS_KEYWORD => true,
+                ConfigurationKeys::EXCLUDE_NAMESPACES_KEYWORD => [
+                    'PHPUnit\Internal',
+                    '~^PHPUnit\\Runner(\\.*)?$~',
+                ],
                 ConfigurationKeys::WHITELIST_KEYWORD => [
                     'PHPUnit\Runner\*',
                     'Acme\Foo',
@@ -118,6 +172,8 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
                 true,
                 true,
                 true,
+                ['~^PHPUnit\\Runner(\\.*)?$~i',],
+                ['PHPUnit\Internal',],
                 'PHPUnit\Runner\*',
                 'Acme\Foo',
             ),
@@ -147,6 +203,22 @@ final class ConfigurationWhitelistFactoryTest extends TestCase
             ],
             InvalidArgumentException::class,
             'Expected expose-global-functions to be a boolean, found "string" instead.',
+        ];
+
+        yield 'exclude namespace is not an array' => [
+            [
+                ConfigurationKeys::EXCLUDE_NAMESPACES_KEYWORD => '',
+            ],
+            InvalidArgumentException::class,
+            'Expected "exclude-namespaces" to be an array of strings, got "string" instead.',
+        ];
+
+        yield 'exclude namespace is not an array of strings' => [
+            [
+                ConfigurationKeys::EXCLUDE_NAMESPACES_KEYWORD => [false],
+            ],
+            InvalidArgumentException::class,
+            'Expected "exclude-namespaces" to be an array of strings, got "boolean" for the element with the index "0".',
         ];
 
         // TODO: need to find a case

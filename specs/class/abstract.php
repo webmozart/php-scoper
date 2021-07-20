@@ -83,7 +83,7 @@ PHP
     ],
 
     'Declaration in the global namespace with the global namespace which is namespaced whitelisted' => [
-        'whitelist' => ['\*'],
+        'exclude-namespaces' => ['/^$/'],
         'payload' => <<<'PHP'
 <?php
 
@@ -137,7 +137,8 @@ PHP
     ],
 
     'Declaration of a whitelisted class in the global namespace which is whitelisted' => [
-        'whitelist' => ['A', '\*'],
+        'whitelist' => ['A'],
+        'exclude-namespaces' => ['/^$/'],
         'registered-classes' => [
             ['A', 'Humbug\A'],
         ],
@@ -218,7 +219,7 @@ PHP
     ],
 
     'Declaration in a whitelisted namespace' => [
-        'whitelist' => ['Foo\*'],
+        'exclude-namespaces' => ['/^Foo$/'],
         'payload' => <<<'PHP'
 <?php
 
@@ -276,12 +277,8 @@ PHP
     ],
 
     'Declaration of a namespaced class whitelisted with a pattern' => [
-        'whitelist' => ['Foo\A*'],
-        'registered-classes' => [
-            ['Foo\A', 'Humbug\Foo\A'],
-            ['Foo\AA', 'Humbug\Foo\AA'],
-            ['Foo\A\B', 'Humbug\Foo\A\B'],
-        ],
+        'exclude-namespaces' => ['/^Foo\\\\A.*$/'],
+        'registered-classes' => [],
         'payload' => <<<'PHP'
 <?php
 
@@ -310,20 +307,17 @@ abstract class A
     {
     }
 }
-\class_alias('Humbug\\Foo\\A', 'Foo\\A', \false);
 abstract class AA
 {
 }
-\class_alias('Humbug\\Foo\\AA', 'Foo\\AA', \false);
 abstract class B
 {
 }
-namespace Humbug\Foo\A;
+namespace Foo\A;
 
 abstract class B
 {
 }
-\class_alias('Humbug\\Foo\\A\\B', 'Foo\\A\\B', \false);
 
 PHP
     ],
@@ -360,7 +354,7 @@ PHP
     ],
 
     'Declaration of a class belonging to a whitelisted namespace' => [
-        'whitelist' => ['\*'],
+        'exclude-namespaces' => ['/^.*$/'],
         'payload' => <<<'PHP'
 <?php
 
